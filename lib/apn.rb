@@ -34,10 +34,8 @@ module APN
     def backend
       @backend ||=
         if defined?(Sidekiq)
-          require 'apn/jobs/sidekiq_notification_job'
           APN::Backend::Sidekiq.new
         elsif defined?(Resque)
-          require 'apn/jobs/resque_notification_job'
           APN::Backend::Resque.new
         else
           APN::Backend::Simple.new
@@ -89,6 +87,18 @@ require 'apn/feedback'
 
 module APN::Jobs
   QUEUE_NAME = :apple_push_notifications
+end
+
+begin
+  require 'sidekiq'
+  require 'apn/jobs/sidekiq_notification_job'
+rescue LoadError
+end
+
+begin
+  require 'resque'
+  require 'apn/jobs/resque_notification_job'
+rescue LoadError
 end
 
 require "apn/railtie" if defined?(Rails)
